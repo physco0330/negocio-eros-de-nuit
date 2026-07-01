@@ -5,7 +5,7 @@ import {
   Button, Chip, Skeleton, Container, Paper, IconButton
 } from '@mui/material';
 import { ShoppingCart, Visibility, Star, ArrowForward, TrendingUp, LocalOffer } from '@mui/icons-material';
-import { productosAPI, configuracionAPI } from '../../services/api';
+import { productosAPI, configuracionAPI, toArray } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
 import { useCart } from '../../context/CartContext';
 import { useThemeMode } from '../../context/ThemeContext';
@@ -146,8 +146,8 @@ export default function HomePage() {
         productosAPI.nuevos().catch(() => ({ data: [] })),
         configuracionAPI.obtener().catch(() => ({ data: {} })),
       ]);
-      setDestacados(dRes.data);
-      setNuevos(nRes.data);
+      setDestacados(toArray(dRes.data));
+      setNuevos(toArray(nRes.data));
       setConfig(cRes.data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }

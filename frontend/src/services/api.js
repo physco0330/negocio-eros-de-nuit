@@ -24,6 +24,10 @@ export const toArray = (data) => {
 
 api.interceptors.response.use(
   (response) => {
+    const ct = response.headers?.['content-type'] || '';
+    if (ct.includes('text/html')) {
+      return Promise.reject(new Error('API returned HTML instead of JSON'));
+    }
     if (response.config.method === 'get' && response.data != null && !Array.isArray(response.data)) {
       const d = response.data;
       if (Array.isArray(d.content)) response.data = d.content;
