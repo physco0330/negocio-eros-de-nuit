@@ -146,8 +146,8 @@ export default function HomePage() {
         productosAPI.nuevos().catch(() => ({ data: [] })),
         configuracionAPI.obtener().catch(() => ({ data: {} })),
       ]);
-      setDestacados(Array.isArray(dRes.data) ? dRes.data : dRes.data?.content || []);
-      setNuevos(Array.isArray(nRes.data) ? nRes.data : nRes.data?.content || []);
+      setDestacados(dRes.data);
+      setNuevos(nRes.data);
       setConfig(cRes.data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }

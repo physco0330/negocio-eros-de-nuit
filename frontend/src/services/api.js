@@ -15,8 +15,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const toArray = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.content)) return data.content;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
+};
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config.method === 'get' && response.data != null && !Array.isArray(response.data)) {
+      const d = response.data;
+      if (Array.isArray(d.content)) response.data = d.content;
+      else if (Array.isArray(d.data)) response.data = d.data;
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
