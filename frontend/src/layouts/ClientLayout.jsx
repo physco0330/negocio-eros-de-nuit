@@ -65,10 +65,10 @@ export default function ClientLayout() {
               fontFamily: '"Playfair Display", serif', fontWeight: 700, color: 'primary.main',
               lineHeight: 1.2, fontSize: '1.1rem', letterSpacing: '0.05em',
             }}>
-              EROS DE NUIT
+              EL NENE
             </Typography>
             <Typography variant="caption" sx={{ fontSize: '0.55rem', opacity: 0.6, letterSpacing: '0.3em' }}>
-              PARFUMS
+              PERFUMERÍA
             </Typography>
           </Box>
         </Box>
@@ -151,13 +151,13 @@ export default function ClientLayout() {
                 fontFamily: '"Playfair Display", serif', fontWeight: 700,
                 color: 'primary.main', lineHeight: 1.1, fontSize: '1rem', letterSpacing: '0.05em',
               }}>
-                EROS DE NUIT
+                EL NENE
               </Typography>
               <Typography variant="caption" sx={{
                 fontSize: '0.5rem', letterSpacing: '0.3em', color: 'text.secondary',
                 display: 'block', lineHeight: 1,
               }}>
-                PARFUMS
+                PERFUMERÍA
               </Typography>
             </Box>
           </Box>

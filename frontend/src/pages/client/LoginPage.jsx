@@ -84,13 +84,13 @@ export default function LoginPage() {
             fontFamily: '"Playfair Display", serif', fontWeight: 700,
             color: 'white', mb: 1, letterSpacing: '0.08em',
           }}>
-            EROS DE NUIT
+            EL NENE
           </Typography>
           <Typography sx={{
             color: gold, fontSize: '0.7rem', letterSpacing: '0.4em',
             fontWeight: 500, mb: 3,
           }}>
-            PARFUMS
+            PERFUMERÍA
           </Typography>
           <Typography sx={{
             color: 'rgba(255,255,255,0.5)', maxWidth: 320, mx: 'auto',
@@ -127,7 +127,7 @@ export default function LoginPage() {
             <Typography variant="h5" sx={{
               fontFamily: '"Playfair Display", serif', fontWeight: 700, color: 'primary.main', letterSpacing: '0.05em',
             }}>
-              EROS DE NUIT
+              EL NENE
             </Typography>
           </Box>
 

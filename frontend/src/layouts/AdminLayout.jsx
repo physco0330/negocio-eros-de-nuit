@@ -106,7 +106,7 @@ export default function AdminLayout() {
             <Box component="img" src={logoEros} alt="El Nene" sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'contain' }} />
             <Box>
               <Typography variant="subtitle2" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, lineHeight: 1.2, fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                EROS DE NUIT
+                EL NENE
               </Typography>
               <Typography variant="caption" sx={{ fontSize: '0.5rem', letterSpacing: '0.2em', color: 'text.secondary' }}>
                 ADMIN PANEL
