@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 import { useThemeMode } from '../context/ThemeContext';
-import logoEros from '../logos/Logo imagen eros de nuit.jpg.jpeg';
+import logoEros from '../logos/logo-el-nene.jpeg';
 
 const DRAWER_WIDTH = 280;
 const GOLD = '#C9A84C';
@@ -59,7 +59,7 @@ export default function ClientLayout() {
           : 'linear-gradient(135deg, rgba(201,168,76,0.06) 0%, rgba(248,246,240,0) 100%)',
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{ width: 48, height: 48, borderRadius: 1, objectFit: 'contain' }} />
+          <Box component="img" src={logoEros} alt="El Nene" sx={{ width: 48, height: 48, borderRadius: 1, objectFit: 'contain' }} />
           <Box>
             <Typography variant="h6" sx={{
               fontFamily: '"Playfair Display", serif', fontWeight: 700, color: 'primary.main',
@@ -145,7 +145,7 @@ export default function ClientLayout() {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mr: 6 }}
             onClick={() => navigate('/')}>
-            <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'contain' }} />
+            <Box component="img" src={logoEros} alt="El Nene" sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'contain' }} />
             <Box>
               <Typography variant="h6" sx={{
                 fontFamily: '"Playfair Display", serif', fontWeight: 700,

@@ -9,7 +9,7 @@ import { productosAPI, configuracionAPI, toArray } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
 import { useCart } from '../../context/CartContext';
 import { useThemeMode } from '../../context/ThemeContext';
-import logoEros from '../../logos/Logo imagen eros de nuit.jpg.jpeg';
+import logoEros from '../../logos/logo-el-nene.jpeg';
 
 const gold = '#C9A84C';
 
@@ -176,7 +176,7 @@ export default function HomePage() {
       }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <Box sx={{ maxWidth: 700, mx: 'auto' }}>
-            <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{
+            <Box component="img" src={logoEros} alt="El Nene" sx={{
               width: { xs: 200, md: 320 }, height: 'auto', mb: 4, filter: 'drop-shadow(0 4px 30px rgba(201,168,76,0.3))',
             }} />
             <Typography variant="h1" sx={{

@@ -8,7 +8,7 @@ import { Visibility, VisibilityOff, Login, PersonAdd, ArrowBack } from '@mui/ico
 import { useAuth } from '../../context/AuthContext';
 import { useThemeMode } from '../../context/ThemeContext';
 import { authAPI } from '../../services/api';
-import logoEros from '../../logos/Logo imagen eros de nuit.jpg.jpeg';
+import logoEros from '../../logos/logo-el-nene.jpeg';
 
 const gold = '#C9A84C';
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
             boxShadow: `0 8px 40px rgba(201,168,76,0.25)`,
             borderRadius: 3, overflow: 'hidden',
           }}>
-            <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <Box component="img" src={logoEros} alt="El Nene" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </Box>
           <Typography variant="h3" sx={{
             fontFamily: '"Playfair Display", serif', fontWeight: 700,
@@ -123,7 +123,7 @@ export default function LoginPage() {
         <Box sx={{ maxWidth: 380, mx: 'auto', width: '100%' }}>
           {/* Mobile Logo */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.5, mb: 4, justifyContent: 'center' }}>
-            <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'contain' }} />
+            <Box component="img" src={logoEros} alt="El Nene" sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'contain' }} />
             <Typography variant="h5" sx={{
               fontFamily: '"Playfair Display", serif', fontWeight: 700, color: 'primary.main', letterSpacing: '0.05em',
             }}>

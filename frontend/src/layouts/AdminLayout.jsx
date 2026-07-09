@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
-import logoEros from '../logos/Logo imagen eros de nuit.jpg.jpeg';
+import logoEros from '../logos/logo-el-nene.jpeg';
 
 const DRAWER_WIDTH = 260;
 const DRAWER_COLLAPSED = 72;
@@ -103,7 +103,7 @@ export default function AdminLayout() {
       }}>
         {!collapsed && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box component="img" src={logoEros} alt="Eros De Nuit" sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'contain' }} />
+            <Box component="img" src={logoEros} alt="El Nene" sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'contain' }} />
             <Box>
               <Typography variant="subtitle2" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, lineHeight: 1.2, fontSize: '0.85rem', letterSpacing: '0.05em' }}>
                 EROS DE NUIT
