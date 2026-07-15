@@ -15,6 +15,7 @@ public class VentaCreateDTO {
     private String clienteNombre;
     private String clienteTelefono;
     private String clienteEmail;
+    private String vendedor;
     private String estado;
     private String observacion;
     private List<DetalleCreateDTO> detalles;

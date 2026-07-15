@@ -46,6 +46,8 @@ export default function DataTable({
   defaultOrder = 'asc',
   emptyMessage = 'No hay datos disponibles',
   searchable = true,
+  expandable = false,
+  renderExpandedRow,
 }) {
   const [order, setOrder] = useState(defaultOrder);
   const [orderBy, setOrderBy] = useState(defaultOrderBy);
@@ -240,27 +242,29 @@ export default function DataTable({
               </TableRow>
             ) : (
               paginatedData.map((row) => (
-                <TableRow
-                  key={row.id}
-                  hover
-                  onClick={() => onRowClick?.(row)}
-                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                  selected={selected.includes(row.id)}
-                >
-                  {selectable && (
-                    <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selected.includes(row.id)}
-                        onChange={() => handleSelect(row.id)}
-                      />
-                    </TableCell>
-                  )}
-                  {columns.map((col) => (
-                    <TableCell key={col.accessor || col.label}>
-                      {col.render ? col.render(row) : row[col.accessor]}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <React.Fragment key={row.id}>
+                  <TableRow
+                    hover
+                    onClick={() => onRowClick?.(row)}
+                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                    selected={selected.includes(row.id)}
+                  >
+                    {selectable && (
+                      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selected.includes(row.id)}
+                          onChange={() => handleSelect(row.id)}
+                        />
+                      </TableCell>
+                    )}
+                    {columns.map((col) => (
+                      <TableCell key={col.accessor || col.label}>
+                        {col.render ? col.render(row) : row[col.accessor]}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {expandable && renderExpandedRow && renderExpandedRow(row)}
+                </React.Fragment>
               ))
             )}
           </TableBody>

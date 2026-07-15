@@ -27,6 +27,8 @@ public class Venta {
 
     private String clienteEmail;
 
+    private String vendedor;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
 

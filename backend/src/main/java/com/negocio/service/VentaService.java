@@ -61,6 +61,7 @@ public class VentaService {
                 .clienteNombre(dto.getClienteNombre())
                 .clienteTelefono(dto.getClienteTelefono())
                 .clienteEmail(dto.getClienteEmail())
+                .vendedor(dto.getVendedor())
                 .estado(Venta.EstadoVenta.valueOf(dto.getEstado() != null ? dto.getEstado() : "PENDIENTE"))
                 .observacion(dto.getObservacion())
                 .total(BigDecimal.ZERO)
@@ -121,6 +122,9 @@ public class VentaService {
         venta.setClienteNombre(dto.getClienteNombre());
         venta.setClienteTelefono(dto.getClienteTelefono());
         venta.setClienteEmail(dto.getClienteEmail());
+        if (dto.getVendedor() != null) {
+            venta.setVendedor(dto.getVendedor());
+        }
         if (dto.getEstado() != null) {
             venta.setEstado(Venta.EstadoVenta.valueOf(dto.getEstado()));
         }
@@ -207,6 +211,7 @@ public class VentaService {
                 .clienteNombre(venta.getClienteNombre())
                 .clienteTelefono(venta.getClienteTelefono())
                 .clienteEmail(venta.getClienteEmail())
+                .vendedor(venta.getVendedor())
                 .total(venta.getTotal())
                 .totalAbonado(venta.getTotalAbonado() != null ? venta.getTotalAbonado() : BigDecimal.ZERO)
                 .estado(venta.getEstado().name())
