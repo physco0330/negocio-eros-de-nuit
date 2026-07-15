@@ -135,4 +135,11 @@ export const combosAPI = {
   eliminar: (id) => api.delete(`/combos/${id}`),
 };
 
+// Abonos
+export const abonosAPI = {
+  listarPorVenta: (ventaId) => api.get(`/abonos/venta/${ventaId}`),
+  crear: (ventaId, data) => api.post(`/abonos/venta/${ventaId}`, data),
+  eliminar: (abonoId) => api.delete(`/abonos/${abonoId}`),
+};
+
 export default api;

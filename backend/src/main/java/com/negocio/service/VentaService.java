@@ -208,6 +208,7 @@ public class VentaService {
                 .clienteTelefono(venta.getClienteTelefono())
                 .clienteEmail(venta.getClienteEmail())
                 .total(venta.getTotal())
+                .totalAbonado(venta.getTotalAbonado() != null ? venta.getTotalAbonado() : BigDecimal.ZERO)
                 .estado(venta.getEstado().name())
                 .observacion(venta.getObservacion())
                 .fechaVenta(venta.getFechaVenta())

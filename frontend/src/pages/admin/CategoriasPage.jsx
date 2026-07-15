@@ -66,7 +66,6 @@ export default function CategoriasPage() {
   };
 
   const columns = [
-    { label: 'ID', accessor: 'id' },
     { label: 'Nombre', accessor: 'nombre' },
     { label: 'Descripción', accessor: 'descripcion' },
     {

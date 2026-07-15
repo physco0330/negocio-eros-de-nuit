@@ -30,6 +30,10 @@ public class Venta {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
 
+    @Column(nullable = false, precision = 12, scale = 2)
+    @Builder.Default
+    private BigDecimal totalAbonado = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoVenta estado;
@@ -38,6 +42,10 @@ public class Venta {
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detalles;
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Abono> abonos = new java.util.ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false)

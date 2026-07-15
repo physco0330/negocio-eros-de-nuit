@@ -2,15 +2,26 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, MenuItem, Grid, Typography, Alert, Snackbar, Chip,
-  IconButton, Avatar, Paper, Divider, Card, CardContent, Tooltip
+  IconButton, Avatar, Paper, Divider, Card, CardContent, Tooltip,
+  LinearProgress
 } from '@mui/material';
 import {
   Add, Edit, Delete, ShoppingCart, TrendingUp, Schedule,
-  CheckCircle, Cancel, Visibility, Person, Phone, Email, LocalOffer
+  CheckCircle, Cancel, Visibility, Person, Phone, Email, LocalOffer,
+  Payments
 } from '@mui/icons-material';
 import DataTable from '../../components/DataTable';
-import { ventasAPI, productosAPI, combosAPI } from '../../services/api';
+import { ventasAPI, productosAPI, combosAPI, abonosAPI } from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+
+const avatarColors = ['#C9A84C', '#E91E63', '#9C27B0', '#2196F3', '#FF9800', '#4CAF50', '#00BCD4', '#795548'];
+
+const getAvatarColor = (name) => {
+  if (!name) return avatarColors[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return avatarColors[Math.abs(hash) % avatarColors.length];
+};
 
 const estadoConfig = {
   PENDIENTE: { color: 'warning', icon: <Schedule fontSize="small" />, label: 'Pendiente', bg: 'rgba(255,152,0,0.08)', border: 'rgba(255,152,0,0.25)' },
@@ -37,6 +48,9 @@ export default function VentasPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [abonoDialog, setAbonoDialog] = useState(false);
+  const [abonoVentaId, setAbonoVentaId] = useState(null);
+  const [abonoForm, setAbonoForm] = useState({ monto: '', observacion: '' });
 
   useEffect(() => { loadAll(); }, []);
 
@@ -45,15 +59,17 @@ export default function VentasPage() {
       const [vRes, pRes, cRes] = await Promise.all([
         ventasAPI.listar(), productosAPI.listar(), combosAPI.activos()
       ]);
-      setVentas(vRes.data);
-      setProductos(pRes.data);
-      setCombos(cRes.data);
+      setVentas(toArray(vRes.data));
+      setProductos(toArray(pRes.data));
+      setCombos(toArray(cRes.data));
     } catch (err) {
       showSnackbar('Error al cargar datos', 'error');
     } finally {
       setLoading(false);
     }
   };
+
+  const toArray = (d) => Array.isArray(d) ? d : d?.content || d?.data || [];
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -134,13 +150,24 @@ export default function VentasPage() {
     }
   };
 
-  const handleEstadoChange = async (id, nuevoEstado) => {
+  const handleAbono = async () => {
     try {
-      await ventasAPI.actualizarEstado(id, nuevoEstado);
-      showSnackbar(`Venta marcada como ${estadoConfig[nuevoEstado]?.label}`);
+      const monto = parseFloat(abonoForm.monto);
+      if (!monto || monto <= 0) {
+        showSnackbar('Ingresa un monto válido', 'error');
+        return;
+      }
+      await abonosAPI.crear(abonoVentaId, { monto, observacion: abonoForm.observacion });
+      showSnackbar('Abono registrado');
+      setAbonoDialog(false);
+      setAbonoForm({ monto: '', observacion: '' });
       loadAll();
+      if (selectedVenta && selectedVenta.id === abonoVentaId) {
+        const updated = await ventasAPI.obtener(abonoVentaId);
+        setSelectedVenta(updated.data);
+      }
     } catch (err) {
-      showSnackbar('Error al cambiar estado', 'error');
+      showSnackbar(err.response?.data?.message || 'Error al registrar abono', 'error');
     }
   };
 
@@ -154,19 +181,14 @@ export default function VentasPage() {
   const updateDetalle = (index, field, value) => {
     const newDetalles = [...form.detalles];
     newDetalles[index] = { ...newDetalles[index], [field]: value };
-
     if (field === 'productoId') {
       if (String(value).startsWith('combo-')) {
         const comboId = parseInt(String(value).replace('combo-', ''));
         const combo = combos.find(c => c.id === comboId);
-        if (combo) {
-          newDetalles[index].precioUnitario = combo.precioCombo;
-        }
+        if (combo) newDetalles[index].precioUnitario = combo.precioCombo;
       } else {
         const prod = productos.find(p => p.id === parseInt(value));
-        if (prod) {
-          newDetalles[index].precioUnitario = prod.precioVenta;
-        }
+        if (prod) newDetalles[index].precioUnitario = prod.precioVenta;
       }
     }
     setForm({ ...form, detalles: newDetalles });
@@ -189,17 +211,11 @@ export default function VentasPage() {
 
   const columns = [
     {
-      label: 'ID', accessor: 'id', sortable: true,
-      render: (row) => (
-        <Typography variant="body2" fontWeight={600}>#{row.id}</Typography>
-      ),
-    },
-    {
       label: 'Cliente', accessor: 'clienteNombre',
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: 'black', fontSize: '0.8rem' }}>
-            {row.clienteNombre?.[0] || '?'}
+          <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(row.clienteNombre), color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>
+            {row.clienteNombre?.[0]?.toUpperCase() || '?'}
           </Avatar>
           <Box>
             <Typography variant="body2" fontWeight={500}>{row.clienteNombre}</Typography>
@@ -223,6 +239,22 @@ export default function VentasPage() {
       render: (row) => (
         <Typography variant="body2" fontWeight={600}>{formatCurrency(row.total)}</Typography>
       ),
+    },
+    {
+      label: 'Abonado', accessor: 'totalAbonado',
+      render: (row) => {
+        const total = parseFloat(row.total) || 0;
+        const abonado = parseFloat(row.totalAbonado) || 0;
+        const pct = total > 0 ? Math.min((abonado / total) * 100, 100) : 0;
+        return (
+          <Box sx={{ minWidth: 120 }}>
+            <Typography variant="body2" fontWeight={600} color={pct >= 100 ? 'success.main' : abonado > 0 ? 'info.main' : 'text.secondary'}>
+              {formatCurrency(abonado)}
+            </Typography>
+            <LinearProgress variant="determinate" value={pct} sx={{ mt: 0.5, height: 4, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: pct >= 100 ? '#4CAF50' : '#2196F3' } }} />
+          </Box>
+        );
+      },
     },
     {
       label: 'Estado', accessor: 'estado',
@@ -263,16 +295,13 @@ export default function VentasPage() {
 
   return (
     <Box>
-      {/* Resumen Cards */}
       <Grid container sx={{ mb: 4, gap: 2, justifyContent: 'center' }}>
         {Object.entries(estadoConfig).map(([key, config]) => (
           <Grid key={key} sx={{ flex: { xs: '0 0 calc(50% - 8px)', md: '0 0 calc(25% - 12px)' } }}>
             <Card
               onClick={() => setFiltroEstado(filtroEstado === key ? '' : key)}
               sx={{
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                bgcolor: config.bg,
+                cursor: 'pointer', transition: 'all 0.2s ease', bgcolor: config.bg,
                 border: `1px solid ${filtroEstado === key ? config.border : 'transparent'}`,
                 '&:hover': { transform: 'translateY(-2px)', boxShadow: 3, border: `1px solid ${config.border}` },
               }}
@@ -297,7 +326,6 @@ export default function VentasPage() {
         ))}
       </Grid>
 
-      {/* Table */}
       <DataTable
         title="Registro de Ventas"
         columns={columns}
@@ -307,27 +335,23 @@ export default function VentasPage() {
         actions={
           <Box sx={{ display: 'flex', gap: 1 }}>
             {filtroEstado && (
-              <Button variant="outlined" size="small" onClick={() => setFiltroEstado('')}
-                sx={{ textTransform: 'none' }}>
+              <Button variant="outlined" size="small" onClick={() => setFiltroEstado('')} sx={{ textTransform: 'none' }}>
                 Limpiar filtro
               </Button>
             )}
-            <Button startIcon={<Add />} variant="contained" onClick={() => handleOpen()}>
+            <Button startIcon={<Add />} variant="contained" onClick={() => handleOpen()} sx={{ textTransform: 'none' }}>
               Nueva Venta
             </Button>
           </Box>
         }
       />
 
-      {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, pb: 1 }}>
-          {editingId ? `Editar Venta #${editingId}` : 'Nueva Venta'}
+          {editingId ? 'Editar Venta' : 'Nueva Venta'}
         </DialogTitle>
         <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-
-            {/* Cliente */}
             <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
               <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600, mb: 2, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.72rem' }}>
                 Información del Cliente
@@ -360,22 +384,21 @@ export default function VentasPage() {
               </Grid>
             </Paper>
 
-            {/* Productos */}
             <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.72rem' }}>
-                    Productos
-                  </Typography>
-                  <Button size="small" startIcon={<Add />} onClick={addDetalle} sx={{ textTransform: 'none' }}>
-                    Agregar producto
-                  </Button>
-                </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.72rem' }}>
+                  Productos
+                </Typography>
+                <Button size="small" startIcon={<Add />} onClick={addDetalle} sx={{ textTransform: 'none' }}>
+                  Agregar producto
+                </Button>
+              </Box>
 
               {form.detalles.length === 0 ? (
                 <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
                   <ShoppingCart sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
                   <Typography variant="body2" color="text.secondary">
-                    No hay productos agregados. Haz clic en "Agregar producto".
+                    No hay productos agregados.
                   </Typography>
                 </Paper>
               ) : (
@@ -389,8 +412,8 @@ export default function VentasPage() {
                             onChange={(e) => updateDetalle(index, 'productoId', e.target.value)}>
                             <MenuItem value="">Seleccionar...</MenuItem>
                             {combos.length > 0 && (
-                              <MenuItem disabled sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'primary.main', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                Combos
+                              <MenuItem disabled sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'primary.main' }}>
+                                COMBOS
                               </MenuItem>
                             )}
                             {combos.map((c) => (
@@ -402,8 +425,8 @@ export default function VentasPage() {
                               </MenuItem>
                             ))}
                             {productos.length > 0 && (
-                              <MenuItem disabled sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                Productos
+                              <MenuItem disabled sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>
+                                PRODUCTOS
                               </MenuItem>
                             )}
                             {productos.map((p) => (
@@ -436,7 +459,6 @@ export default function VentasPage() {
                       </Grid>
                     </Paper>
                   ))}
-
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
                     <Typography variant="h6" fontWeight={700} sx={{ fontFamily: '"Playfair Display", serif' }}>
                       Total: {formatCurrency(form.detalles.reduce((sum, d) => sum + (d.cantidad || 0) * (d.precioUnitario || 0), 0))}
@@ -450,15 +472,14 @@ export default function VentasPage() {
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={() => setDialogOpen(false)} sx={{ textTransform: 'none' }}>Cancelar</Button>
           <Button variant="contained" onClick={handleSave} sx={{ textTransform: 'none' }}>
-            {editingId ? 'Actualizar Venta' : 'Crear Venta'}
+            {editingId ? 'Actualizar' : 'Crear Venta'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Detail Dialog */}
       <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
-          Detalle de Venta #{selectedVenta?.id}
+          Detalle de Venta
         </DialogTitle>
         <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
           {selectedVenta && (
@@ -498,12 +519,34 @@ export default function VentasPage() {
                 </Box>
               </Paper>
 
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Payments sx={{ color: 'primary.main', fontSize: 20 }} />
+                    <Typography variant="subtitle2" fontWeight={600}>Abonos</Typography>
+                  </Box>
+                  {selectedVenta.estado !== 'CANCELADA' && selectedVenta.estado !== 'FINALIZADA' && (
+                    <Button size="small" startIcon={<Add />} onClick={() => { setAbonoVentaId(selectedVenta.id); setAbonoDialog(true); }} sx={{ textTransform: 'none' }}>
+                      Abonar
+                    </Button>
+                  )}
+                </Box>
+                {selectedVenta.totalAbonado > 0 && (
+                  <Box sx={{ mb: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">Abonado: {formatCurrency(selectedVenta.totalAbonado)}</Typography>
+                      <Typography variant="caption" color="text.secondary">Restante: {formatCurrency((selectedVenta.total || 0) - (selectedVenta.totalAbonado || 0))}</Typography>
+                    </Box>
+                    <LinearProgress variant="determinate" value={Math.min(((selectedVenta.totalAbonado || 0) / (selectedVenta.total || 1)) * 100, 100)} sx={{ height: 6, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                  </Box>
+                )}
+                {(!selectedVenta.detalles || selectedVenta.totalAbonado <= 0) && (
+                  <Typography variant="body2" color="text.secondary">Sin abonos registrados</Typography>
+                )}
+              </Paper>
+
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Chip
-                  icon={estadoConfig[selectedVenta.estado]?.icon}
-                  label={estadoConfig[selectedVenta.estado]?.label}
-                  color={estadoConfig[selectedVenta.estado]?.color}
-                />
+                <Chip icon={estadoConfig[selectedVenta.estado]?.icon} label={estadoConfig[selectedVenta.estado]?.label} color={estadoConfig[selectedVenta.estado]?.color} />
                 <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'center' }}>
                   {formatDate(selectedVenta.fechaVenta)}
                 </Typography>
@@ -515,27 +558,6 @@ export default function VentasPage() {
                   <Typography variant="body2" color="text.secondary">{selectedVenta.observacion}</Typography>
                 </Paper>
               )}
-
-              {selectedVenta.estado !== 'CANCELADA' && selectedVenta.estado !== 'FINALIZADA' && (
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {selectedVenta.estado === 'PENDIENTE' && (
-                    <Button size="small" variant="outlined" onClick={() => { handleEstadoChange(selectedVenta.id, 'EN_PROCESO'); setDetailOpen(false); }}
-                      sx={{ textTransform: 'none' }}>
-                      Marcar En Proceso
-                    </Button>
-                  )}
-                  {selectedVenta.estado === 'EN_PROCESO' && (
-                    <Button size="small" variant="outlined" color="success" onClick={() => { handleEstadoChange(selectedVenta.id, 'FINALIZADA'); setDetailOpen(false); }}
-                      sx={{ textTransform: 'none' }}>
-                      Marcar Finalizada
-                    </Button>
-                  )}
-                  <Button size="small" variant="outlined" color="error" onClick={() => { handleEstadoChange(selectedVenta.id, 'CANCELADA'); setDetailOpen(false); }}
-                    sx={{ textTransform: 'none' }}>
-                    Cancelar Venta
-                  </Button>
-                </Box>
-              )}
             </Box>
           )}
         </DialogContent>
@@ -544,7 +566,22 @@ export default function VentasPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      <Dialog open={abonoDialog} onClose={() => setAbonoDialog(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>Registrar Abono</DialogTitle>
+        <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField fullWidth type="number" label="Monto del Abono" value={abonoForm.monto}
+              onChange={(e) => setAbonoForm({ ...abonoForm, monto: e.target.value })} required />
+            <TextField fullWidth label="Observación (opcional)" value={abonoForm.observacion}
+              onChange={(e) => setAbonoForm({ ...abonoForm, observacion: e.target.value })} />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setAbonoDialog(false)} sx={{ textTransform: 'none' }}>Cancelar</Button>
+          <Button variant="contained" onClick={handleAbono} sx={{ textTransform: 'none' }}>Registrar</Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
         <DialogTitle sx={{ fontFamily: '"Playfair Display", serif' }}>¿Eliminar venta?</DialogTitle>
         <DialogContent>

@@ -18,6 +18,7 @@ public class VentaDTO {
     private String clienteTelefono;
     private String clienteEmail;
     private BigDecimal total;
+    private BigDecimal totalAbonado;
     private String estado;
     private String observacion;
     private LocalDateTime fechaVenta;
