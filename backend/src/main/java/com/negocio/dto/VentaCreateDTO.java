@@ -18,6 +18,7 @@ public class VentaCreateDTO {
     private String vendedor;
     private String estado;
     private String observacion;
+    private BigDecimal abonoInicial;
     private List<DetalleCreateDTO> detalles;
 
     @Data

@@ -31,6 +31,9 @@ public class VentaService {
     @Autowired
     private ComboProductoRepository comboProductoRepository;
 
+    @Autowired
+    private AbonoRepository abonoRepository;
+
     public List<VentaDTO> listarTodas() {
         return ventaRepository.findAll().stream()
                 .map(this::toDTO)
@@ -62,7 +65,7 @@ public class VentaService {
                 .clienteTelefono(dto.getClienteTelefono())
                 .clienteEmail(dto.getClienteEmail())
                 .vendedor(dto.getVendedor())
-                .estado(Venta.EstadoVenta.valueOf(dto.getEstado() != null ? dto.getEstado() : "PENDIENTE"))
+                .estado(Venta.EstadoVenta.PENDIENTE)
                 .observacion(dto.getObservacion())
                 .total(BigDecimal.ZERO)
                 .build();
@@ -101,9 +104,26 @@ public class VentaService {
             detalleVentaRepository.saveAll(detalles);
             guardada.setTotal(total);
             guardada.setDetalles(detalles);
-            ventaRepository.save(guardada);
         }
 
+        if (dto.getAbonoInicial() != null && dto.getAbonoInicial().compareTo(BigDecimal.ZERO) > 0) {
+            Abono abono = Abono.builder()
+                    .venta(guardada)
+                    .monto(dto.getAbonoInicial())
+                    .observacion("Abono inicial")
+                    .build();
+            abonoRepository.save(abono);
+            guardada.setTotalAbonado(dto.getAbonoInicial());
+
+            if (guardada.getTotal().compareTo(BigDecimal.ZERO) > 0 &&
+                guardada.getTotalAbonado().compareTo(guardada.getTotal()) >= 0) {
+                guardada.setEstado(Venta.EstadoVenta.FINALIZADA);
+            } else {
+                guardada.setEstado(Venta.EstadoVenta.EN_PROCESO);
+            }
+        }
+
+        ventaRepository.save(guardada);
         return toDTO(guardada);
     }
 
@@ -124,9 +144,6 @@ public class VentaService {
         venta.setClienteEmail(dto.getClienteEmail());
         if (dto.getVendedor() != null) {
             venta.setVendedor(dto.getVendedor());
-        }
-        if (dto.getEstado() != null) {
-            venta.setEstado(Venta.EstadoVenta.valueOf(dto.getEstado()));
         }
         venta.setObservacion(dto.getObservacion());
 
@@ -155,6 +172,26 @@ public class VentaService {
             detalleVentaRepository.saveAll(nuevosDetalles);
             venta.setTotal(total);
             venta.setDetalles(nuevosDetalles);
+        }
+
+        if (dto.getAbonoInicial() != null && dto.getAbonoInicial().compareTo(BigDecimal.ZERO) > 0) {
+            Abono abono = Abono.builder()
+                    .venta(venta)
+                    .monto(dto.getAbonoInicial())
+                    .observacion("Abono al editar")
+                    .build();
+            abonoRepository.save(abono);
+            venta.setTotalAbonado(venta.getTotalAbonado().add(dto.getAbonoInicial()));
+        }
+
+        BigDecimal total = venta.getTotal();
+        BigDecimal abonado = venta.getTotalAbonado();
+        if (total.compareTo(BigDecimal.ZERO) > 0 && abonado.compareTo(total) >= 0) {
+            venta.setEstado(Venta.EstadoVenta.FINALIZADA);
+        } else if (abonado.compareTo(BigDecimal.ZERO) > 0) {
+            venta.setEstado(Venta.EstadoVenta.EN_PROCESO);
+        } else {
+            venta.setEstado(Venta.EstadoVenta.PENDIENTE);
         }
 
         Venta actualizada = ventaRepository.save(venta);

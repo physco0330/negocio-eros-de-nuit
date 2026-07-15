@@ -32,7 +32,7 @@ const estadoConfig = {
 
 const emptyForm = {
   clienteNombre: '', clienteTelefono: '', clienteEmail: '',
-  vendedor: '', estado: 'PENDIENTE', observacion: '', detalles: [],
+  vendedor: '', observacion: '', abonoInicial: '', detalles: [],
 };
 
 export default function VentasPage() {
@@ -97,8 +97,8 @@ export default function VentasPage() {
         clienteTelefono: venta.clienteTelefono || '',
         clienteEmail: venta.clienteEmail || '',
         vendedor: venta.vendedor || '',
-        estado: venta.estado,
         observacion: venta.observacion || '',
+        abonoInicial: '',
         detalles: venta.detalles?.map(d => ({
           productoId: d.productoId,
           cantidad: d.cantidad,
@@ -127,8 +127,8 @@ export default function VentasPage() {
         clienteTelefono: form.clienteTelefono,
         clienteEmail: form.clienteEmail,
         vendedor: form.vendedor,
-        estado: form.estado,
         observacion: form.observacion,
+        abonoInicial: form.abonoInicial ? parseFloat(form.abonoInicial) : null,
         detalles: form.detalles.map(d => {
           const isCombo = String(d.productoId).startsWith('combo-');
           return {
@@ -334,6 +334,19 @@ export default function VentasPage() {
       },
     },
     {
+      label: 'Saldo', accessor: 'saldo',
+      render: (row) => {
+        const total = parseFloat(row.total) || 0;
+        const abonado = parseFloat(row.totalAbonado) || 0;
+        const saldo = total - abonado;
+        return (
+          <Typography variant="body2" fontWeight={600} color={saldo <= 0 ? 'success.main' : saldo > 0 ? 'error.main' : 'text.secondary'}>
+            {formatCurrency(saldo)}
+          </Typography>
+        );
+      },
+    },
+    {
       label: 'Estado', accessor: 'estado',
       render: (row) => {
         const config = estadoConfig[row.estado] || estadoConfig.PENDIENTE;
@@ -463,14 +476,18 @@ export default function VentasPage() {
                 <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth label="Teléfono" value={form.clienteTelefono} onChange={(e) => setForm({ ...form, clienteTelefono: e.target.value })} /></Grid>
                 <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth label="Email" value={form.clienteEmail} onChange={(e) => setForm({ ...form, clienteEmail: e.target.value })} /></Grid>
                 <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth label="Vendedor" value={form.vendedor} onChange={(e) => setForm({ ...form, vendedor: e.target.value })} /></Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField fullWidth select label="Estado" value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })}>
-                    {Object.entries(estadoConfig).map(([key, config]) => (
-                      <MenuItem key={key} value={key}>{config.label}</MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth label="Observación" value={form.observacion} onChange={(e) => setForm({ ...form, observacion: e.target.value })} /></Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label={editingId ? "Agregar Abono" : "Abono Inicial (opcional)"}
+                    value={form.abonoInicial}
+                    onChange={(e) => setForm({ ...form, abonoInicial: e.target.value })}
+                    helperText={editingId ? "Monto adicional a abonar" : "Si deseas registrar un abono al crear"}
+                    slotProps={{ input: { startAdornment: <AttachMoney sx={{ color: 'text.secondary', mr: 0.5, fontSize: 18 }} /> } }}
+                  />
+                </Grid>
               </Grid>
             </Paper>
 
