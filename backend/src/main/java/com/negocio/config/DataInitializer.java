@@ -18,15 +18,21 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (!usuarioRepository.existsByCorreo("admin@negocio.com")) {
-            Usuario admin = Usuario.builder()
-                    .nombre("Administrador")
-                    .correo("admin@negocio.com")
-                    .contrasena(passwordEncoder.encode("admin123"))
-                    .rol(Usuario.Rol.SUPER_ADMIN)
+        createIfNotExists("Administrador", "admin@negocio.com", "admin123", Usuario.Rol.SUPER_ADMIN);
+        createIfNotExists("Admin 2", "admin2@negocio.com", "admin123", Usuario.Rol.SUPER_ADMIN);
+        createIfNotExists("Admin 3", "admin3@negocio.com", "admin123", Usuario.Rol.SUPER_ADMIN);
+    }
+
+    private void createIfNotExists(String nombre, String correo, String contrasena, Usuario.Rol rol) {
+        if (!usuarioRepository.existsByCorreo(correo)) {
+            Usuario user = Usuario.builder()
+                    .nombre(nombre)
+                    .correo(correo)
+                    .contrasena(passwordEncoder.encode(contrasena))
+                    .rol(rol)
                     .build();
-            usuarioRepository.save(admin);
-            System.out.println("=== ADMIN USER CREATED: admin@negocio.com / admin123 ===");
+            usuarioRepository.save(user);
+            System.out.println("=== USER CREATED: " + correo + " / " + contrasena + " [" + rol + "] ===");
         }
     }
 }
