@@ -280,7 +280,12 @@ export default function VentasPage() {
 
   const totalVendido = filteredVentas.reduce((s, v) => s + (parseFloat(v.total) || 0), 0);
   const totalAbonado = filteredVentas.reduce((s, v) => s + (parseFloat(v.totalAbonado) || 0), 0);
-  const saldoPendiente = totalVendido - totalAbonado;
+  const totalPagado = ventas.filter(v => v.estado === 'FINALIZADA').reduce((s, v) => s + (parseFloat(v.total) || 0), 0);
+  const saldoPendiente = ventas.filter(v => v.estado !== 'CANCELADA').reduce((s, v) => {
+    const total = parseFloat(v.total) || 0;
+    const abonado = parseFloat(v.totalAbonado) || 0;
+    return s + (total - abonado);
+  }, 0);
 
   const columns = [
     {
@@ -434,7 +439,12 @@ export default function VentasPage() {
         <Divider orientation="vertical" flexItem />
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Abonado</Typography>
-          <Typography variant="h5" fontWeight={700} color="success.main">{formatCurrency(totalAbonado)}</Typography>
+          <Typography variant="h5" fontWeight={700} color="info.main">{formatCurrency(totalAbonado)}</Typography>
+        </Box>
+        <Divider orientation="vertical" flexItem />
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Pagado</Typography>
+          <Typography variant="h5" fontWeight={700} color="success.main">{formatCurrency(totalPagado)}</Typography>
         </Box>
         <Divider orientation="vertical" flexItem />
         <Box sx={{ textAlign: 'center' }}>
