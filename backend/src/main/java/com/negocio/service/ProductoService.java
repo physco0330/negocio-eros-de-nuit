@@ -52,6 +52,7 @@ public class ProductoService {
                 .descuentoPorcentaje(dto.getDescuentoPorcentaje() != null ? dto.getDescuentoPorcentaje() : BigDecimal.ZERO)
                 .stockActual(dto.getStockActual())
                 .stockMinimo(dto.getStockMinimo() != null ? dto.getStockMinimo() : 5)
+                .activo(true)
                 .build();
 
         if (dto.getCategoriaId() != null) {
