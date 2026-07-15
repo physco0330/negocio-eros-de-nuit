@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/configuracion/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/combos/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/abonos/**").permitAll()
+                .requestMatchers("/api/abonos/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
